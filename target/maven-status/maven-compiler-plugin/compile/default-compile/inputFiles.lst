@@ -1,0 +1,13 @@
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Board.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/CheckersException.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Game.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/GameState.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Move.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Piece.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/PieceColor.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Player.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Position.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/model/Square.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/view/CheckersCLI.java
+/Users/erik/Desktop/Checkers/src/main/java/checkers/view/CheckersGUI.java
+/Users/erik/Desktop/Checkers/src/main/java/module-info.java

@@ -1,0 +1,13 @@
+checkers/model/GameState.class
+checkers/model/Board.class
+checkers/view/CheckersCLI.class
+checkers/model/Square.class
+checkers/model/Piece.class
+checkers/model/CheckersException.class
+checkers/model/PieceColor.class
+checkers/model/Position.class
+checkers/model/Move.class
+checkers/model/Game.class
+module-info.class
+checkers/model/Player.class
+checkers/view/CheckersGUI.class

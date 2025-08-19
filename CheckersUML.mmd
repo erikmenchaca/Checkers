@@ -1,123 +1,76 @@
+---
+id: f5a4df61-6136-4683-a1f6-c6c258117358
+---
 classDiagram
-    %% Core Game Classes
     class CheckersGame {
         -CheckersBoard board
         -Player redPlayer
         -Player blackPlayer
         -Player currentPlayer
         -GameState gameState
-        -List~Move~ gameHistory
-        -MoveValidator moveValidator
-        -GameRules gameRules
-        -int turnCounter
-        -boolean mustJump
-        -List~GameObserver~ observers
-        +CheckersGame(Player redPlayer, Player blackPlayer)
+        +CheckersGame(Player red, Player black)
         +startGame() void
-        +makeMove(Move move) MoveResult
+        +makeMove(Move move) boolean
         +getPossibleMoves(Player player) List~Move~
-        +getPossibleJumps(Player player) List~Move~
         +isGameOver() boolean
         +getWinner() Player
         +getCurrentPlayer() Player
         +switchPlayer() void
-        +undoLastMove() boolean
-        +getGameHistory() List~Move~
-        +addObserver(GameObserver observer) void
-        +notifyObservers() void
-        +saveGame(String filename) void
-        +loadGame(String filename) void
-        +resetGame() void
     }
 
     class CheckersBoard {
         -Square[][] squares
-        -final int BOARD_SIZE
-        -Map~Position, CheckersPiece~ pieces
-        -List~CheckersPiece~ capturedRedPieces
-        -List~CheckersPiece~ capturedBlackPieces
-        +CheckersBoard()
         +initializeBoard() void
-        +getSquare(int row, int col) Square
-        +getSquare(Position position) Square
-        +getPiece(Position position) CheckersPiece
-        +setPiece(Position position, CheckersPiece piece) void
-        +removePiece(Position position) CheckersPiece
-        +isValidPosition(Position position) boolean
-        +isEmpty(Position position) boolean
+        +getPiece(Position pos) CheckersPiece
+        +setPiece(Position pos, CheckersPiece piece) void
+        +removePiece(Position pos) void
+        +isValidPosition(Position pos) boolean
+        +isEmpty(Position pos) boolean
         +getAllPieces(PieceColor color) List~CheckersPiece~
-        +getKings(PieceColor color) List~CheckersPiece~
-        +getRegularPieces(PieceColor color) List~CheckersPiece~
-        +clone() CheckersBoard
-        +toString() String
     }
 
     class Square {
         -Position position
-        -SquareColor color
         -CheckersPiece piece
-        -boolean highlighted
-        -boolean validMoveTarget
-        +Square(Position position, SquareColor color)
-        +getPosition() Position
-        +getColor() SquareColor
+        +Square(Position pos)
         +getPiece() CheckersPiece
         +setPiece(CheckersPiece piece) void
         +removePiece() CheckersPiece
         +isEmpty() boolean
-        +isPlayable() boolean
-        +isHighlighted() boolean
-        +setHighlighted(boolean highlighted) void
-        +isValidMoveTarget() boolean
-        +setValidMoveTarget(boolean valid) void
     }
 
     class CheckersPiece {
-        <<abstract>>
-        -Position position
         -PieceColor color
-        -Player owner
-        -boolean captured
-        -int moveCount
-        +CheckersPiece(Position position, PieceColor color, Player owner)
-        +getPosition() Position
-        +setPosition(Position position) void
+        -boolean isKing
+        -Position position
+        +CheckersPiece(PieceColor color, Position pos)
         +getColor() PieceColor
-        +getOwner() Player
-        +isCaptured() boolean
-        +setCaptured(boolean captured) void
-        +getMoveCount() int
-        +incrementMoveCount() void
-        +canMoveTo(Position target, CheckersBoard board) boolean*
-        +canJumpTo(Position target, CheckersBoard board) boolean*
-        +getPossibleMoves(CheckersBoard board) List~Position~*
-        +getPossibleJumps(CheckersBoard board) List~Position~*
-        +clone() CheckersPiece*
-        +shouldPromoteToKing(Position position) boolean*
+        +isKing() boolean
+        +promote() void
+        +getPosition() Position
+        +setPosition(Position pos) void
+        +getPossibleMoves(CheckersBoard board) List~Move~
+        +getPossibleJumps(CheckersBoard board) List~Move~
     }
 
-    class RegularPiece {
-        +RegularPiece(Position position, PieceColor color, Player owner)
-        +canMoveTo(Position target, CheckersBoard board) boolean
-        +canJumpTo(Position target, CheckersBoard board) boolean
-        +getPossibleMoves(CheckersBoard board) List~Position~
-        +getPossibleJumps(CheckersBoard board) List~Position~
-        +shouldPromoteToKing(Position position) boolean
-        +clone() CheckersPiece
-        -isForwardMove(Position target) boolean
-        -isDiagonalMove(Position target) boolean
+    class Move {
+        -Position from
+        -Position to
+        -boolean isJump
+        -boolean isPromotion
+        +Move(Position from, Position to, boolean isJump)
+        +getFrom() Position
+        +getTo() Position
+        +isJump() boolean
+        +isPromotion() boolean
     }
 
-    class KingPiece {
-        +KingPiece(Position position, PieceColor color, Player owner)
-        +canMoveTo(Position target, CheckersBoard board) boolean
-        +canJumpTo(Position target, CheckersBoard board) boolean
-        +getPossibleMoves(CheckersBoard board) List~Position~
-        +getPossibleJumps(CheckersBoard board) List~Position~
-        +shouldPromoteToKing(Position position) boolean
-        +clone() CheckersPiece
-        -canMoveInDirection(Position target) boolean
-        -getPathToTarget(Position target) List~Position~
+    class Player {
+        -String name
+        -PieceColor color
+        +Player(String name, PieceColor color)
+        +getName() String
+        +getColor() PieceColor
     }
 
     class Position {
@@ -126,280 +79,15 @@ classDiagram
         +Position(int row, int col)
         +getRow() int
         +getCol() int
-        +equals(Object obj) boolean
+        +equals(Object o) boolean
         +hashCode() int
         +toString() String
-        +isValid(int boardSize) boolean
-        +getDistance(Position other) int
-        +getManhattanDistance(Position other) int
-        +getDiagonalDistance(Position other) int
-        +getDirection(Position target) Direction
-        +add(int rowOffset, int colOffset) Position
-        +clone() Position
     }
 
-    class Move {
-        -Position from
-        -Position to
-        -MoveType type
-        -List~Position~ jumpedPositions
-        -List~CheckersPiece~ capturedPieces
-        -boolean promotesToKing
-        -Player player
-        -long timestamp
-        +Move(Position from, Position to, MoveType type, Player player)
-        +getFrom() Position
-        +getTo() Position
-        +getType() MoveType
-        +getJumpedPositions() List~Position~
-        +addJumpedPosition(Position position) void
-        +getCapturedPieces() List~CheckersPiece~
-        +addCapturedPiece(CheckersPiece piece) void
-        +isPromotion() boolean
-        +setPromotesToKing(boolean promotes) void
-        +getPlayer() Player
-        +getTimestamp() long
-        +isJump() boolean
-        +isMultiJump() boolean
-        +getDistance() int
-        +toString() String
-    }
-
-    class Player {
-        <<abstract>>
-        -String name
-        -PieceColor color
-        -PlayerType type
-        -int score
-        -int gamesWon
-        -int gamesLost
-        -long totalThinkingTime
-        +Player(String name, PieceColor color, PlayerType type)
-        +getName() String
-        +getColor() PieceColor
-        +getType() PlayerType
-        +getScore() int
-        +addScore(int points) void
-        +getGamesWon() int
-        +getGamesLost() int
-        +incrementWins() void
-        +incrementLosses() void
-        +getTotalThinkingTime() long
-        +addThinkingTime(long time) void
-        +makeMove(CheckersGame game) Move*
-        +equals(Object obj) boolean
-        +toString() String
-    }
-
-    class HumanPlayer {
-        -Move selectedMove
-        -boolean waitingForMove
-        +HumanPlayer(String name, PieceColor color)
-        +makeMove(CheckersGame game) Move
-        +setSelectedMove(Move move) void
-        +getSelectedMove() Move
-        +isWaitingForMove() boolean
-        +setWaitingForMove(boolean waiting) void
-    }
-
-    class AIPlayer {
-        -AIStrategy strategy
-        -int difficulty
-        -int maxDepth
-        -long maxThinkingTime
-        -MoveEvaluator evaluator
-        -TranspositionTable transpositionTable
-        +AIPlayer(String name, PieceColor color, AIStrategy strategy, int difficulty)
-        +makeMove(CheckersGame game) Move
-        +setDifficulty(int difficulty) void
-        +getDifficulty() int
-        +setMaxThinkingTime(long maxTime) void
-        +getStrategy() AIStrategy
-        +setStrategy(AIStrategy strategy) void
-        +clearTranspositionTable() void
-    }
-
-    class AIStrategy {
-        <<abstract>>
-        -MoveEvaluator evaluator
-        -int maxDepth
-        -TranspositionTable transpositionTable
-        +AIStrategy(MoveEvaluator evaluator, int maxDepth)
-        +findBestMove(CheckersGame game, Player player) Move*
-        +evaluatePosition(CheckersBoard board, Player player) double*
-        +setMaxDepth(int depth) void
-        +getMaxDepth() int
-        #generateMoves(CheckersGame game, Player player) List~Move~
-        #orderMoves(List~Move~ moves, CheckersBoard board) void
-    }
-
-    class MinimaxStrategy {
-        -int nodesEvaluated
-        +MinimaxStrategy(MoveEvaluator evaluator, int maxDepth)
-        +findBestMove(CheckersGame game, Player player) Move
-        +evaluatePosition(CheckersBoard board, Player player) double
-        -minimax(CheckersBoard board, int depth, boolean maximizing, Player player) double
-        -evaluateLeaf(CheckersBoard board, Player player) double
-        +getNodesEvaluated() int
-        +resetNodeCount() void
-    }
-
-    class AlphaBetaStrategy {
-        -int nodesEvaluated
-        -int pruningCount
-        +AlphaBetaStrategy(MoveEvaluator evaluator, int maxDepth)
-        +findBestMove(CheckersGame game, Player player) Move
-        +evaluatePosition(CheckersBoard board, Player player) double
-        -alphaBeta(CheckersBoard board, int depth, double alpha, double beta, boolean maximizing, Player player) double
-        +getNodesEvaluated() int
-        +getPruningCount() int
-        +resetCounters() void
-    }
-
-    class MoveEvaluator {
-        -Map~String, Double~ weights
-        +MoveEvaluator()
-        +evaluate(CheckersBoard board, Player player) double
-        +evaluateMaterial(CheckersBoard board, Player player) double
-        +evaluatePosition(CheckersBoard board, Player player) double
-        +evaluateMobility(CheckersBoard board, Player player) double
-        +evaluateKingSafety(CheckersBoard board, Player player) double
-        +evaluateCenter(CheckersBoard board, Player player) double
-        +setWeight(String feature, double weight) void
-        +getWeight(String feature) double
-        +resetWeights() void
-    }
-
-    class TranspositionTable {
-        -Map~String, TranspositionEntry~ table
-        -int maxSize
-        -int hits
-        -int misses
-        +TranspositionTable(int maxSize)
-        +store(String key, double value, int depth, TranspositionEntryType type) void
-        +lookup(String key, int depth) TranspositionEntry
-        +clear() void
-        +getSize() int
-        +getHitRate() double
-        +getHits() int
-        +getMisses() int
-    }
-
-    class TranspositionEntry {
-        -double value
-        -int depth
-        -TranspositionEntryType type
-        -long timestamp
-        +TranspositionEntry(double value, int depth, TranspositionEntryType type)
-        +getValue() double
-        +getDepth() int
-        +getType() TranspositionEntryType
-        +getTimestamp() long
-        +isValid(int currentDepth) boolean
-    }
-
-    class MoveValidator {
-        -GameRules rules
-        +MoveValidator(GameRules rules)
-        +isValidMove(Move move, CheckersBoard board, Player player) ValidationResult
-        +mustJump(Player player, CheckersBoard board) boolean
-        +canPlayerMove(Player player, CheckersBoard board) boolean
-        +validateBasicMove(Move move, CheckersBoard board) ValidationResult
-        +validateJump(Move move, CheckersBoard board) ValidationResult
-        +validateMultiJump(Move move, CheckersBoard board) ValidationResult
-        +findAvailableJumps(Player player, CheckersBoard board) List~Move~
-        +findContinuedJumps(CheckersPiece piece, CheckersBoard board) List~Move~
-    }
-
-    class GameRules {
-        -boolean mandatoryJumps
-        -boolean flyingKings
-        -boolean backwardCaptures
-        -boolean multipleJumpsRequired
-        -int maxMovesWithoutCapture
-        +GameRules()
-        +isMandatoryJumps() boolean
-        +setMandatoryJumps(boolean mandatory) void
-        +isFlyingKings() boolean
-        +setFlyingKings(boolean flying) void
-        +isBackwardCaptures() boolean
-        +setBackwardCaptures(boolean allowed) void
-        +isMultipleJumpsRequired() boolean
-        +setMultipleJumpsRequired(boolean required) void
-        +getMaxMovesWithoutCapture() int
-        +setMaxMovesWithoutCapture(int max) void
-        +createStandardRules() GameRules
-        +createInternationalRules() GameRules
-    }
-
-    class GameHistory {
-        -List~GameState~ states
-        -List~Move~ moves
-        -int currentIndex
-        -int maxHistorySize
-        +GameHistory(int maxSize)
-        +addState(GameState state, Move move) void
-        +canUndo() boolean
-        +canRedo() boolean
-        +undo() GameState
-        +redo() GameState
-        +getCurrentState() GameState
-        +getLastMove() Move
-        +getMoves() List~Move~
-        +clear() void
-        +getSize() int
-    }
-
-    %% Observer Pattern
-    class GameObserver {
-        <<interface>>
-        +onGameStateChanged(GameState newState) void
-        +onPlayerTurn(Player currentPlayer) void
-        +onMoveMade(Move move, MoveResult result) void
-        +onPieceCaptured(CheckersPiece piece) void
-        +onPiecePromoted(CheckersPiece piece) void
-        +onGameOver(Player winner) void
-    }
-
-    class GameStatistics {
-        -int totalGames
-        -int redWins
-        -int blackWins
-        -int draws
-        -long averageGameTime
-        -Map~String, Integer~ moveFrequency
-        -List~GameResult~ gameResults
-        +GameStatistics()
-        +recordGame(GameResult result) void
-        +getTotalGames() int
-        +getWinRate(PieceColor color) double
-        +getAverageGameTime() long
-        +getMostFrequentMove() String
-        +getGameResults() List~GameResult~
-        +exportToCSV(String filename) void
-        +reset() void
-    }
-
-    %% Enumerations
     class PieceColor {
         <<enumeration>>
         RED
         BLACK
-    }
-
-    class SquareColor {
-        <<enumeration>>
-        LIGHT
-        DARK
-    }
-
-    class PlayerType {
-        <<enumeration>>
-        HUMAN
-        AI_EASY
-        AI_MEDIUM
-        AI_HARD
-        AI_EXPERT
     }
 
     class GameState {
@@ -409,134 +97,15 @@ classDiagram
         RED_WINS
         BLACK_WINS
         DRAW
-        PAUSED
-        ABORTED
     }
 
-    class MoveType {
-        <<enumeration>>
-        REGULAR_MOVE
-        JUMP
-        MULTI_JUMP
-        PROMOTION
-    }
-
-    class Direction {
-        <<enumeration>>
-        NORTHEAST
-        NORTHWEST
-        SOUTHEAST
-        SOUTHWEST
-    }
-
-    class TranspositionEntryType {
-        <<enumeration>>
-        EXACT
-        LOWER_BOUND
-        UPPER_BOUND
-    }
-
-    class ValidationResult {
-        -boolean valid
-        -String errorMessage
-        -List~String~ warnings
-        +ValidationResult(boolean valid, String errorMessage)
-        +isValid() boolean
-        +getErrorMessage() String
-        +getWarnings() List~String~
-        +addWarning(String warning) void
-        +hasWarnings() boolean
-    }
-
-    class MoveResult {
-        -boolean successful
-        -List~CheckersPiece~ capturedPieces
-        -boolean promotedToKing
-        -boolean gameEnded
-        -Player winner
-        -String message
-        +MoveResult(boolean successful, String message)
-        +isSuccessful() boolean
-        +getCapturedPieces() List~CheckersPiece~
-        +addCapturedPiece(CheckersPiece piece) void
-        +isPromotedToKing() boolean
-        +setPromotedToKing(boolean promoted) void
-        +isGameEnded() boolean
-        +setGameEnded(boolean ended) void
-        +getWinner() Player
-        +setWinner(Player winner) void
-        +getMessage() String
-    }
-
-    class GameResult {
-        -Player redPlayer
-        -Player blackPlayer
-        -Player winner
-        -int totalMoves
-        -long gameDuration
-        -List~Move~ moves
-        -Date gameDate
-        +GameResult(Player redPlayer, Player blackPlayer, Player winner)
-        +getWinner() Player
-        +getTotalMoves() int
-        +getGameDuration() long
-        +getMoves() List~Move~
-        +getGameDate() Date
-        +addMove(Move move) void
-        +setGameDuration(long duration) void
-    }
-
-    %% Relationships - Core Game
-    CheckersGame --> CheckersBoard : contains
-    CheckersGame --> Player : manages 2
-    CheckersGame --> MoveValidator : uses
-    CheckersGame --> GameRules : follows
-    CheckersGame --> GameHistory : maintains
-    CheckersGame --> GameObserver : notifies multiple
-    CheckersGame --> GameState : has
-
-    CheckersBoard --> Square : contains 8x8
-    CheckersBoard --> CheckersPiece : manages multiple
-
-    Square --> Position : has
-    Square --> SquareColor : has
-    Square --> CheckersPiece : contains optional
-
-    CheckersPiece --> Position : has
-    CheckersPiece --> PieceColor : has
-    CheckersPiece --> Player : owned by
-    CheckersPiece <|-- RegularPiece : extends
-    CheckersPiece <|-- KingPiece : extends
-
-    Move --> Position : has from/to
-    Move --> MoveType : has
-    Move --> Player : made by
-    Move --> CheckersPiece : captures multiple
-
-    Player --> PieceColor : has
-    Player --> PlayerType : has
-    Player <|-- HumanPlayer : extends
-    Player <|-- AIPlayer : extends
-
-    AIPlayer --> AIStrategy : uses
-    AIPlayer --> MoveEvaluator : has
-
-    AIStrategy --> MoveEvaluator : uses
-    AIStrategy --> TranspositionTable : uses
-    AIStrategy <|-- MinimaxStrategy : extends
-    AIStrategy <|-- AlphaBetaStrategy : extends
-
-    TranspositionTable --> TranspositionEntry : stores multiple
-    TranspositionEntry --> TranspositionEntryType : has
-
-    MoveValidator --> GameRules : uses
-    MoveValidator --> ValidationResult : returns
-
-    GameHistory --> GameState : stores multiple
-    GameHistory --> Move : stores multiple
-
-    GameStatistics --> GameResult : tracks multiple
-    GameResult --> Player : involves multiple
-    GameResult --> Move : contains multiple
-
-    Position --> Direction : can determine
+    %% Relationships
+    CheckersGame --> CheckersBoard
+    CheckersGame --> Player
+    CheckersGame --> GameState
+    CheckersBoard --> Square
+    Square --> CheckersPiece
+    CheckersPiece --> Position
+    CheckersPiece --> PieceColor
+    Move --> Position
+    Player --> PieceColor
